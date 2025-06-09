@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatWithFriends - Chat</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="chat-interface">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- User Profile Section -->
+            <div class="user-profile">
+                <div class="profile-avatar">
+                    <img id="userAvatar" src="" alt="User Avatar">
+                    <div class="status-indicator" id="userStatusIndicator"></div>
+                </div>
+                <div class="profile-info">
+                    <span id="currentUsername"></span>
+                    <div class="user-status">Çevrimiçi</div>
+                </div>
+                <div class="profile-actions">
+                    <button onclick="showUserSettings()" title="Ayarlar"><i class="fas fa-cog"></i></button>
+                    <button onclick="logout()" title="Çıkış"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="sidebar-tabs">
+                <button class="tab-btn active" onclick="showTab('friends')">
+                    <i class="fas fa-users"></i> Arkadaşlar
+                </button>
+                <button class="tab-btn" onclick="showTab('groups')">
+                    <i class="fas fa-layer-group"></i> Gruplar
+                </button>
+            </div>
+
+            <!-- Friends Tab -->
+            <div id="friendsTab" class="tab-content active">
+                <!-- Search -->
+                <div class="section">
+                    <div class="search-container">
+                        <input type="text" id="searchInput" placeholder="Arkadaş ara..." class="search-input">
+                        <i class="fas fa-search search-icon"></i>
+                    </div>
+                </div>
+
+                <!-- Friend Requests -->
+                <div class="section">
+                    <h3>Arkadaşlık İstekleri <span id="requestCount" class="count">0</span></h3>
+                    <div id="friendRequests" class="request-list"></div>
+                </div>
+
+                <!-- Add Friend -->
+                <div class="section">
+                    <h3>Arkadaş Ekle</h3>
+                    <div class="add-friend">
+                        <input type="text" id="friendUsername" placeholder="Kullanıcı adı girin...">
+                        <button onclick="addFriend()"><i class="fas fa-plus"></i></button>
+                    </div>
+                </div>
+
+                <!-- Friends List -->
+                <div class="section">
+                    <h3>Arkadaşlarım</h3>
+                    <div id="friendsList" class="friends-list"></div>
+                </div>
+            </div>
+
+            <!-- Groups Tab -->
+            <div id="groupsTab" class="tab-content">
+                <!-- Create Group -->
+                <div class="section">
+                    <h3>Grup Oluştur</h3>
+                    <div class="create-group">
+                        <input type="text" id="groupName" placeholder="Grup adı girin...">
+                        <button onclick="createGroup()"><i class="fas fa-plus"></i></button>
+                    </div>
+                </div>
+
+                <!-- Groups List -->
+                <div class="section">
+                    <h3>Gruplarım</h3>
+                    <div id="groupsList" class="groups-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="chat-main">
+            <!-- Welcome Screen -->
+            <div id="welcomeScreen" class="welcome-screen">
+                <div class="welcome-content">
+                    <i class="fas fa-comments"></i>
+                    <h2>ChatWithFriends'e Hoş Geldin!</h2>
+                    <p>Sohbet başlatmak için soldan bir arkadaşını veya grubu seç.</p>
+                </div>
+            </div>
+
+            <!-- Chat Container -->
+            <div id="chatContainer" class="chat-container" style="display: none;">
+                <!-- Chat Header -->
+                <div class="chat-header">
+                    <div class="chat-info">
+                        <img id="chatAvatar" src="" alt="Avatar" class="chat-avatar">
+                        <div>
+                            <h3 id="chatName"></h3>
+                            <span id="chatStatus" class="chat-status"></span>
+                            <div id="typingIndicator" class="typing-indicator" style="display: none;">
+                                <span class="typing-text"></span>
+                                <div class="typing-dots">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-actions">
+                        <button onclick="startVoiceCall()" title="Sesli Arama" class="voice-call-btn">
+                            <i class="fas fa-phone"></i>
+                        </button>
+                        <button onclick="showChatSettings()" title="Chat Ayarları">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Messages Area -->
+                <div class="messages-area" id="messagesArea">
+                    <!-- Messages will be loaded here -->
+                </div>
+
+                <!-- Message Input -->
+                <div class="message-input-area">
+                    <button onclick="attachFile()" class="attach-btn" title="Dosya Ekle">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                    <input type="file" id="fileInput" style="display: none;" onchange="handleFileSelect(event)" multiple accept="*/*">
+                    <div class="message-input-container">
+                        <input type="text" id="messageInput" placeholder="Mesajınızı yazın..." 
+                               onkeypress="handleMessageKeyPress(event)" 
+                               oninput="handleTyping()"
+                               onblur="stopTyping()">
+                        <button onclick="sendMessage()" class="send-btn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Group Settings Modal -->
+    <div id="groupSettingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Grup Ayarları - <span id="groupSettingsName"></span></h2>
+                <button onclick="closeGroupSettings()" class="close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="groupSettingsId">
+                <div class="settings-section">
+                    <h3>Grup Üyeleri</h3>
+                    <div id="groupMembersList" class="group-members-list"></div>
+                </div>
+                <div class="settings-section">
+                    <h3>Arkadaş Ekle</h3>
+                    <div id="availableFriendsList" class="available-friends-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Settings Modal -->
+    <div id="userSettingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Kullanıcı Ayarları</h2>
+                <button onclick="closeUserSettings()" class="close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-section">
+                    <h3>Profil</h3>
+                    <div class="profile-settings">
+                        <div class="avatar-upload">
+                            <img id="settingsAvatar" src="" alt="Profile" class="settings-avatar">
+                            <button onclick="uploadProfilePhoto()" class="upload-btn">
+                                <i class="fas fa-camera"></i>
+                            </button>
+                            <input type="file" id="profilePhotoInput" style="display: none;" accept="image/*" onchange="handleProfilePhotoChange(event)">
+                        </div>
+                        <div class="profile-info-settings">
+                            <div class="form-group">
+                                <label>Kullanıcı Adı</label>
+                                <input type="text" id="settingsUsername" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label>E-posta</label>
+                                <input type="email" id="settingsEmail">
+                            </div>
+                            <button onclick="updateProfile()" class="save-btn">Kaydet</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Voice Call Modal -->
+    <div id="voiceCallModal" class="modal">
+        <div class="modal-content voice-call-content">
+            <div class="voice-call-header">
+                <h3 id="voiceCallName">Sesli Arama</h3>
+                <span id="voiceCallStatus">Aranıyor...</span>
+            </div>
+            <div class="voice-call-avatar">
+                <img id="voiceCallAvatar" src="" alt="Avatar">
+            </div>
+            <div class="voice-call-controls">
+                <button onclick="muteCall()" class="control-btn" id="muteBtn">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button onclick="endCall()" class="control-btn end-call">
+                    <i class="fas fa-phone-slash"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Incoming Call Modal -->
+    <div id="incomingCallModal" class="modal incoming-call-modal">
+        <div class="modal-content incoming-call-content">
+            <div class="incoming-call-header">
+                <h3 id="incomingCallName">Gelen Arama</h3>
+                <img id="incomingCallAvatar" src="" alt="Caller" class="incoming-call-avatar">
+            </div>
+            <div class="incoming-call-controls">
+                <button onclick="acceptIncomingCall()" class="control-btn accept-call">
+                    <i class="fas fa-phone"></i>
+                </button>
+                <button onclick="rejectIncomingCall()" class="control-btn reject-call">
+                    <i class="fas fa-phone-slash"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/chat.js"></script>
+</body>
+</html>
